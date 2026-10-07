@@ -1,8 +1,12 @@
+[中文](README.md) | [English](README.en.md)
+
 # GaugeFlow · 知华科技计量器具校准与超差追溯
 
 <img src="frontend/public/brand/logo.jpg" width="86" alt="知华科技">
 
-**公开源码学习版 0.1.0** · 上海如静知华信息科技有限公司 · [知华科技官网](https://www.zhuatech.cn/) · 商业咨询微信 **zhuatech / zhuatech2**。
+**公开源码学习版 0.1.0／非商业源码版** · 知华科技（上海如静知华信息科技有限公司） · [知华科技官网](https://www.zhuatech.cn/) · 商业咨询微信 **zhuatech / zhuatech2**。
+
+系统基于 Java 21／Spring Boot、Vue 3、MySQL 和 Flyway，提供校准审核、量具使用登记与超差影响追溯。
 
 量具校准发现不合格时，除了停止使用，还需要找出曾经用它检验的产品与任务，并记录影响判断和复检结论。GaugeFlow 为制造企业计量人员、检验人员和质量复核人员提供这条协作流程。
 
@@ -53,20 +57,32 @@
 ### 登录入口
 ![登录页面](docs/screenshots/login.jpg)
 
+登录页面：以实际账号进入授权工作空间。
+
 ### 使用人员工作台
 ![用户端工作台](docs/screenshots/workbench.jpg)
+
+使用人员工作台：查看本人待评估和授权范围内的计量待办。
 
 ### 量具台账
 ![量具业务页面](docs/screenshots/gauges.jpg)
 
+量具台账：核对状态、有效报告和启用条件。
+
 ### 超差影响记录
 ![超差追溯页面](docs/screenshots/incident.jpg)
+
+超差影响记录：查看潜在受影响使用快照、分派、评估与独立复核。
 
 ### 管理端角色权限
 ![后台与权限页面](docs/screenshots/roles.jpg)
 
+角色权限：配置接口权限及部门、全部数据范围。
+
 ### 授权范围统计
 ![统计仪表盘](docs/screenshots/dashboard.jpg)
+
+统计：查看授权范围内的有效性、到期窗口和使用数量。
 
 截图中“验收测试”资料仅用于展示操作流程，不代表真实产品、校准机构或检测结论；空库不初始化量具和使用记录。
 
@@ -137,13 +153,18 @@ npm run lint
 npm test
 npm run build
 cd ../backend
-# 从受控环境注入 TEST_ADMIN_PASSWORD：12位以上，大写/小写/数字
-mvn spotless:check test
+TEST_ADMIN_PASSWORD="Aa9$(python3 -c 'import secrets;print(secrets.token_hex(20))')" mvn spotless:check test package
 cd ..
 docker compose -p gaugeflow-check config --quiet
 docker compose -p gaugeflow-check up -d --build --wait
 python3 scripts/smoke.py --run
-# 重启本项目数据库，等待健康，再重启后端
+# 按依赖顺序重启本次独立验收环境。
+docker compose -p gaugeflow-check restart mysql
+docker compose -p gaugeflow-check up -d --wait mysql
+docker compose -p gaugeflow-check restart backend
+docker compose -p gaugeflow-check up -d --wait backend
+docker compose -p gaugeflow-check restart frontend
+docker compose -p gaugeflow-check up -d --wait
 python3 scripts/smoke.py --verify
 python3 scripts/release-check.py
 git diff --check
@@ -181,3 +202,5 @@ git diff --check
 | 微信 zhuatech | 微信 zhuatech2 |
 |---|---|
 | ![微信 zhuatech](docs/images/wechat-zhuatech.png) | ![微信 zhuatech2](docs/images/wechat-zhuatech2.png) |
+
+商业授权或深度定制开发请联系知华科技。
